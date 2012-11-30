@@ -1,5 +1,5 @@
 require 'mechanize'
-require './db'
+require './lib/db'
 
 =begin
  1. You have to construct your own parsing mechanism depending on each site.
@@ -10,13 +10,13 @@ require './db'
 class Getsite
 	def initialize
 		@db = DB.new
+		get_esecurity
 	end
 
-
-	def get_esecurity PRINT=nil
+	def get_esecurity(print=nil)
 		agent = Mechanize.new
-		page = agent.get "http://www.esecurityplanet.com"
 		site = "http://www.esecurityplanet.com"
+		page = agent.get site
 		page.search("//div[@class='article homepage']").each do |v|
 			category = v.search("div[@class='category']/p").text.strip
 
@@ -33,7 +33,7 @@ class Getsite
 			author = v.search("a[@class='home']").text
 			date = v.search("span[@class='publish-date']").text.strip
 
-			if PRINT
+			if print
 				puts "category: #{category}"
 				puts "link: #{link}"
 				puts "title: #{title}"
