@@ -1,5 +1,6 @@
 require './lib/db'
 require 'rss'
+require 'mongrel'
 
 # Database format is shown as below:
 =begin
@@ -17,10 +18,20 @@ require 'rss'
 ["id", "site", "category", "link", "title", "desc", "author", "date"]
 =end
 
-class Makerss
+class Makerss < Mongrel::HttpHandler
 	def initialize
 		@db = DB.new
-		column_name = @db.table_info.map {|v| v[1]}
+		@column_name = @db.table_info.map {|v| v[1]}
+	end
+
+	def process(request, response)
+    response.start(200) do |head, out|
+      head["Content-Type"] = "text/html"
+			out.puts make_rss
+    end
+	end
+
+	def make_rss
 		rss = RSS::Maker.make("2.0") do |maker|
 			maker.channel.title = "BoB Security News"
 			maker.channel.description = "This page shows latest security news"
@@ -31,7 +42,7 @@ class Makerss
 			#TODO: select latest news
 			@db.size.times do |i|
 				article = @db.select(i+1)[0]
-				article.map!.with_index {|v, k| [column_name[k],v]}
+				article.map!.with_index {|v, k| [@column_name[k],v]}
 				article = Hash[article]
 				maker.items.new_item do |item|
 					item.link = article['site'] + article['link']
@@ -41,11 +52,7 @@ class Makerss
 					item.date = article['date']
 				end
 			end
-
 		end
-
-		#TODO: add this to server
-		puts rss
 	end
 end
 
