@@ -3,14 +3,15 @@ require 'mongrel'
 require './lib/rss'
 
 host    = ARGV[0] || "127.0.0.1"
-port    = ARGV[1] || 7171
+port    = ARGV[1] || 80
 docroot = ARGV[2] || "html/"
 
 # Configure Mongrel and handlers
 config = Mongrel::Configurator.new :host => host, :port => port do
 	listener do
+		redirect("/", "/rss")
 		uri "/",              :handler => Mongrel::DirHandler.new(docroot)
-		uri "/rss", 					:handler => Makerss.new#, :in_front => true
+		uri "/rss", 					:handler => Makerss.new, :in_front => true
 	end
 
 	# CTRL+C to stop server

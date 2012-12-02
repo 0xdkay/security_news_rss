@@ -45,6 +45,8 @@ class Getsite
 			
 			@db.insert(site, category, link, title, description, author, date)
 		end
+
+		puts "Get data from #{site} is done."
 	end
 end
 
