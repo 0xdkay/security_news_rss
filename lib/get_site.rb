@@ -8,9 +8,9 @@ require './lib/db'
 =end
 
 class Getsite
-	def initialize
+	def initialize(print=nil)
 		@db = DB.new
-		get_esecurity
+		get_esecurity(print)
 	end
 
 	def get_esecurity(print=nil)
