@@ -46,7 +46,7 @@ class Makerss < Mongrel::HttpHandler
 				article = Hash[article]
 				maker.items.new_item do |item|
 					item.link = article['link']
-					article['category'] = "ETC" if article['category'] == nil
+					article['category'] = "ETC" if not article['category'] or article['category'].size == 0
 					item.title = "[" + article['category'] + "]" + article['title']
 					item.description = article['desc']
 					item.author = article['author']

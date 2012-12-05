@@ -18,14 +18,28 @@ class Getsite
 
 
 	private
-	def do_print category, link, title, description, author, date
-			puts "category: #{category}"
-			puts "link: #{link}"
-			puts "title: #{title}"
-			puts "description: #{description}"
-			puts "author: #{author}"
-			puts "date: #{date}"
+	def do_print args
+			puts "site: #{args[0]}"
+			puts "category: #{args[1]}"
+			puts "link: #{args[2]}"
+			puts "title: #{args[3]}"
+			puts "description: #{args[4]}"
+			puts "author: #{args[5]}"
+			puts "date: #{args[6]}"
 			puts 
+	end
+
+	def do_insert(*args)
+			#delete html special characters
+			args = args.map{|v| @coder.encode(v, :named).split.join(' ')}
+
+			if @print
+				do_print args
+			end
+
+			if @insert
+				@db.insert args
+			end
 	end
 
 	protected
@@ -35,7 +49,7 @@ class Getsite
 		page=agent.get site
 		page.search("//div[@class='post hentry']").each do |v|
 
-			category=nil
+			category = nil
 			t=v.search("h3[@class='post-title entry-title']/a")
 			link=t.attr('href').text.strip
 			title=t.text.strip
@@ -43,18 +57,10 @@ class Getsite
 			author=v.search("div/span[@class='author']")[0].text.split[2..-1].join(' ').strip
 			date=v.search("abbr[@class='updated']").text.strip
 
-			#delete html special characters
-			description = @coder.encode(description, :named).split.join(' ')
 			date = date.split('/')
 			date = [date[1],date[0],date[2]].join('/')
 
-			if @print
-				do_print category, link, title, description, author, date
-			end
-
-			if @insert
-				@db.insert(site, category, link, title, description, author, date)
-			end
+			do_insert(site, category, link, title, description, author, date)
 		end
 
 		puts "Get data from #{site} is done."
@@ -76,13 +82,7 @@ class Getsite
 			date = t.text.split('on ')[1]
 			date = date.split("\t")[0]
 
-			if @print
-				do_print category, link, title, description, author, date
-			end
-			
-			if @insert
-				@db.insert(site, category, link, title, description, author, date)
-			end
+			do_insert(site, category, link, title, description, author, date)
 		end
 
 		puts "Get data from #{site} is done."
@@ -105,13 +105,7 @@ class Getsite
 			date = date[1] + " " + date[0].gsub(/[^\d]/,'') + "," + date[2]
 			link = CGI::parse(URI.parse(link).query)['sp_url'][0]
 
-			if @print
-				do_print category, link, title, description, author, date
-			end
-
-			if @insert
-				@db.insert(site, category, link, title, description, author, date)
-			end
+			do_insert(site, category, link, title, description, author, date)
 		end
 
 		puts "Get data from #{site} is done."
@@ -137,13 +131,7 @@ class Getsite
 			author = v.search("a[@class='home']").text
 			date = v.search("span[@class='publish-date']").text.strip
 
-			if @print
-				do_print category, link, title, description, author, date
-			end
-			
-			if @insert
-				@db.insert(site, category, site+link, title, description, author, date)
-			end
+			do_insert(site, category, link, title, description, author, date)
 		end
 
 		puts "Get data from #{site} is done."

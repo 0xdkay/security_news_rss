@@ -24,11 +24,12 @@ class DB
 		end
 	end
 
-	def insert site, category, link, title, desc, author, date
+	def insert args
+		#args[3] == title
 		@db.execute("INSERT INTO #{@table_name} (site, category, link, title, desc, author, date)
 								  SELECT ?, ?, ?, ?, ?, ?, ?
 								WHERE NOT EXISTS (SELECT id FROM #{@table_name} WHERE title=?);",
-								[site, category, link, title, desc, author, date, title])
+								args+[args[3]])
 	end
 
 	def delete id
