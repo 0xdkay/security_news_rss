@@ -2,6 +2,8 @@ require 'mechanize'
 require './lib/db'
 require 'htmlentities'
 # coding : UTF-8
+#
+#TODO: get whole content not just description
 
 class Getsite
 	def initialize(print=nil)
@@ -29,7 +31,7 @@ class Getsite
 			puts 
 	end
 
-	def do_insert(*args)
+	def do_insert *args
 			#delete html special characters
 			args = args.map{|v| @coder.encode(v, :named).split.join(' ')}
 
@@ -40,6 +42,29 @@ class Getsite
 			if @insert
 				@db.insert args
 			end
+	end
+
+	def get_desc link
+		agent = Mechanize.new
+		page = agent.get link
+		case link
+		when /zdnet/
+			str = "div[@class='storyBody']"
+		when /arstechnica/
+			str = "div[@class='article-content clearfix']"
+		when /esecurityplanet/
+			str = "div[@class='articleBody']"
+		when /nakedsecurity/
+			str = "div[@class='entry-content']"
+		when /wired.com/
+			str = "div[@class='entry']"
+		when /infoworld.com/
+			str = "div[@class='articleBody']"
+		when /theregister.co.uk/
+			str = "div[@id='body']"
+		end
+
+		return page.search(str).text
 	end
 
 	protected
@@ -82,6 +107,8 @@ class Getsite
 			date = t.text.split('on ')[1]
 			date = date.split("\t")[0]
 
+			description = get_desc link
+
 			do_insert(site, category, link, title, description, author, date)
 		end
 
@@ -96,14 +123,14 @@ class Getsite
 
 			category = nil
 			title = v.search("span[@class='feed_title']").text.strip
-			date = v.search("span[@class='feed_date']").text.strip
+			date = v.search("span[@class='feed_date']").text.strip.split
+			date = date[1] + " " + date[0].gsub(/[^\d]/,'') + "," + date[2]
 			author = v.search("span[@class='feed_source']/a").text.strip
 			description = v.search("span[@class='feed_desc']").text.strip
 			link = v.search("div[@style='float:right;font-size:15px;']/a").attr('href').text
-
-			date = date.split
-			date = date[1] + " " + date[0].gsub(/[^\d]/,'') + "," + date[2]
 			link = CGI::parse(URI.parse(link).query)['sp_url'][0]
+
+			description = get_desc link
 
 			do_insert(site, category, link, title, description, author, date)
 		end
@@ -130,6 +157,8 @@ class Getsite
 			title = t.text
 			author = v.search("a[@class='home']").text
 			date = v.search("span[@class='publish-date']").text.strip
+
+			description = get_desc site+link
 
 			do_insert(site, category, link, title, description, author, date)
 		end
