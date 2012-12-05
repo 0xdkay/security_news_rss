@@ -45,8 +45,9 @@ class Makerss < Mongrel::HttpHandler
 				article.map!.with_index {|v, k| [@column_name[k],v]}
 				article = Hash[article]
 				maker.items.new_item do |item|
-					item.link = article['site'] + article['link']
-					item.title = article['title']
+					item.link = article['link']
+					article['category'] = "ETC" if article['category'] == nil
+					item.title = "[" + article['category'] + "]" + article['title']
 					item.description = article['desc']
 					item.author = article['author']
 					item.date = article['date']

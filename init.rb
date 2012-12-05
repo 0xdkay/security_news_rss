@@ -17,7 +17,11 @@ config = Mongrel::Configurator.new :host => host, :port => port do
 	end
 
 	# CTRL+C to stop server
-	trap("INT") {$server_on = false; stop}
+	trap("INT") do
+		puts "server is going down..."
+		$server_on = false
+		stop
+	end
 	run
 end
 
@@ -27,13 +31,12 @@ puts "Mongrel listening on '#{host}:#{port}', serving documents from '#{docroot}
 t = Thread.new do
 	$server_on = true
 	start = Time.now
-	Getsite.new 1
 	while $server_on do
 		if Time.now - start >= 3600
 			Getsite.new 1
 			start = Time.now
 		end
-		sleep(1)
+		sleep(10)
 	end
 end
 
