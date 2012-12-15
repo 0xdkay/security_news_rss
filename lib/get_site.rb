@@ -59,21 +59,21 @@ class Getsite
 		str = ""
 		case link
 		when /zdnet/
-			str = "div[@class='storyBody']"
+			str = "//div[@class='storyBody']"
 		when /arstechnica/
-			str = "div[@class='article-content clearfix']"
+			str = "//div[@class='article-content clearfix']"
 		when /esecurityplanet/
-			str = "div[@class='articleBody']"
+			str = "//div[@class='articleBody']"
 		when /nakedsecurity/
-			str = "div[@class='entry-content']"
+			str = "//div[@class='entry-content']"
 		when /wired.com/
-			str = "div[@class='entry']"
+			str = "//div[@class='entry']"
 		when /infoworld.com/
-			str = "div[@itemprop='articleBody']"
+			str = "//div[@itemprop='articleBody']"
 		when /theregister.co.uk/
-			str = "div[@id='body']"
+			str = "//div[@id='body']"
 		when /cnet.com/
-			str = "div[@class='postBody txtWrap']"
+			str = "//div[@class='postBody txtWrap']"
 		end
 
 		return nil if str.size == 0
@@ -85,6 +85,7 @@ class Getsite
 	end
 
 	def get_category title
+		title = title.downcase
 		for word in @os
 			return "OS" if title.include? word
 		end
