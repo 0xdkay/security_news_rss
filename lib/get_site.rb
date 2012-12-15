@@ -6,9 +6,18 @@ require 'htmlentities'
 #TODO: get whole content not just description
 
 class Getsite
+
 	def initialize(print=nil)
 		@print = print
 		@insert = true
+
+
+		@os = %w{winodws, mac, arm, architecture, mips, cisc, risc}
+		@web = %w{phishing, xss, sql, cyber, facebook, tweeter, social network, sns}
+		@network = %w{wireless, packet, podcast, broadcast, wireshark, tcp, wifi, dos}
+		@vulns = %w{open source, patch, zero & day, cve-, vuln, exploit}
+		@malware = %w{malware, rootkit, privacy, threat, worm, stuxnet, virus}
+		@mobile = %w{smartphone, android, phone, os x, ios}
 
 		@db = DB.new
 		@coder = HTMLEntities.new
@@ -45,8 +54,9 @@ class Getsite
 	end
 
 	def get_desc link
-		agent = Mechanize.new
-		page = agent.get link
+		p link
+
+		str = ""
 		case link
 		when /zdnet/
 			str = "div[@class='storyBody']"
@@ -59,12 +69,38 @@ class Getsite
 		when /wired.com/
 			str = "div[@class='entry']"
 		when /infoworld.com/
-			str = "div[@class='articleBody']"
+			str = "div[@itemprop='articleBody']"
 		when /theregister.co.uk/
 			str = "div[@id='body']"
+		when /cnet.com/
+			str = "div[@class='postBody txtWrap']"
 		end
 
+		return nil if str.size == 0
+
+		agent = Mechanize.new
+		page = agent.get link
+
 		return page.search(str).text
+	end
+
+	def get_category title
+		for word in @os
+			return "OS" if title.include? word
+		end
+		for word in @web
+			return "Web" if title.include? word
+		end
+		for word in @network
+			return "Network" if title.include? word
+		end
+		for word in @vulns
+			return "Vulns" if title.include? word
+		end
+		for word in @mobile
+			return "Mobile" if title.include? word
+		end
+		return "etc"
 	end
 
 	protected
@@ -74,7 +110,6 @@ class Getsite
 		page=agent.get site
 		page.search("//div[@class='post hentry']").each do |v|
 
-			category = nil
 			t=v.search("h3[@class='post-title entry-title']/a")
 			link=t.attr('href').text.strip
 			title=t.text.strip
@@ -84,6 +119,8 @@ class Getsite
 
 			date = date.split('/')
 			date = [date[1],date[0],date[2]].join('/')
+
+			category = get_category description
 
 			do_insert(site, category, link, title, description, author, date)
 		end
@@ -100,14 +137,16 @@ class Getsite
 			t=v.search("h2/a")
 			title = t.text
 			link = t.attr('href').text
-			category = nil
 			t= v.search("div[@class='entry-meta']")
 			description = v.search("div[@class='entry-summary']/p")[0].text
 			author = t.search("span[@class='author vcard']").text
 			date = t.text.split('on ')[1]
 			date = date.split("\t")[0]
 
-			description = get_desc link
+			tmp = get_desc link
+			description = tmp if tmp && tmp.size
+
+			category = get_category description
 
 			do_insert(site, category, link, title, description, author, date)
 		end
@@ -130,7 +169,10 @@ class Getsite
 			link = v.search("div[@style='float:right;font-size:15px;']/a").attr('href').text
 			link = CGI::parse(URI.parse(link).query)['sp_url'][0]
 
-			description = get_desc link
+			tmp = get_desc link
+			description = tmp if tmp && tmp.size
+
+			category = get_category description
 
 			do_insert(site, category, link, title, description, author, date)
 		end
