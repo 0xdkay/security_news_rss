@@ -40,7 +40,7 @@ class Makerss < Mongrel::HttpHandler
 			maker.items.do_sort = true
 
 
-			articles = @db.select_top_ten
+			articles = @db.select_top 30
 			articles.each do |ar|
 				article = ar
 				article.map!.with_index {|v, k| [@column_name[k],v]}
@@ -55,21 +55,6 @@ class Makerss < Mongrel::HttpHandler
 				end
 			end
 			
-=begin
-			@db.size.times do |i|
-				article = @db.select(i+1)[0]
-				article.map!.with_index {|v, k| [@column_name[k],v]}
-				article = Hash[article]
-				maker.items.new_item do |item|
-					item.link = article['link']
-					article['category'] = "ETC" if not article['category'] or article['category'].size == 0
-					item.title = "[" + article['category'] + "]" + article['title']
-					item.description = article['desc']
-					item.author = article['author']
-					item.date = article['date']
-				end
-			end
-=end
 		end
 	end
 end

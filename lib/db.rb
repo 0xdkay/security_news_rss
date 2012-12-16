@@ -40,8 +40,8 @@ class DB
 		@db.execute("SELECT id, site, category, link, title, desc, author, date FROM #{@table_name} WHERE id=?;", id)
 	end
 
-	def select_top_ten
-		@db.execute("SELECT id, site, category, link, title, desc, author, date FROM #{@table_name} order by date limit 0, 10;")
+	def select_top num
+		@db.execute("SELECT id, site, category, link, title, desc, author, date FROM #{@table_name} order by date limit 0, ?;", num)
 	end
 
 	def select_all
