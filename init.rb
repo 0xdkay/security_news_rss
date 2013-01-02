@@ -28,12 +28,15 @@ end
 # Start Mongrel
 puts "Mongrel listening on '#{host}:#{port}', serving documents from '#{docroot}'."
 
+get = Getsite.new 1
+get.crawl
+
 t = Thread.new do
 	$server_on = true
 	start = Time.now
 	while $server_on do
 		if Time.now - start >= 3600
-			Getsite.new 1
+			get.crawl
 			start = Time.now
 		end
 		sleep(10)

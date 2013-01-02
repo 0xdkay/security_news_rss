@@ -21,6 +21,9 @@ class Getsite
 
 		@db = DB.new
 		@coder = HTMLEntities.new
+	end
+
+	def crawl
 		get_hackernews
 		get_nakedsecurity
 		get_securityphresh
@@ -43,6 +46,7 @@ class Getsite
 	def do_insert *args
 			#delete html special characters
 			args = args.map{|v| @coder.encode(v, :named).split.join(' ')}
+			args += [Time.now.to_s]
 
 			if @print
 				do_print args
@@ -116,14 +120,10 @@ class Getsite
 			title=t.text.strip
 			description=v.search("div[@class='post-body entry-content']/div/div").text.strip
 			author=v.search("div/span[@class='author']")[0].text.split[2..-1].join(' ').strip
-			date=v.search("abbr[@class='updated']").text.strip
-
-			date = date.split('/')
-			date = [date[1],date[0],date[2]].join('/')
 
 			category = get_category description
 
-			do_insert(site, category, link, title, description, author, date)
+			do_insert(site, category, link, title, description, author)
 		end
 
 		puts "Get data from #{site} is done."
@@ -141,15 +141,13 @@ class Getsite
 			t= v.search("div[@class='entry-meta']")
 			description = v.search("div[@class='entry-summary']/p")[0].text
 			author = t.search("span[@class='author vcard']").text
-			date = t.text.split('on ')[1]
-			date = date.split("\t")[0]
 
 			tmp = get_desc link
 			description = tmp if tmp && tmp.size
 
 			category = get_category description
 
-			do_insert(site, category, link, title, description, author, date)
+			do_insert(site, category, link, title, description, author)
 		end
 
 		puts "Get data from #{site} is done."
@@ -163,8 +161,6 @@ class Getsite
 
 			category = nil
 			title = v.search("span[@class='feed_title']").text.strip
-			date = v.search("span[@class='feed_date']").text.strip.split
-			date = date[1] + " " + date[0].gsub(/[^\d]/,'') + "," + date[2]
 			author = v.search("span[@class='feed_source']/a").text.strip
 			description = v.search("span[@class='feed_desc']").text.strip
 			link = v.search("div[@style='float:right;font-size:15px;']/a").attr('href').text
@@ -175,7 +171,7 @@ class Getsite
 
 			category = get_category description
 
-			do_insert(site, category, link, title, description, author, date)
+			do_insert(site, category, link, title, description, author)
 		end
 
 		puts "Get data from #{site} is done."
@@ -199,17 +195,15 @@ class Getsite
 			link = t.attr('href').text
 			title = t.text
 			author = v.search("a[@class='home']").text
-			date = v.search("span[@class='publish-date']").text.strip
 
 			description = get_desc site+link
 
-			do_insert(site, category, link, title, description, author, date)
+			do_insert(site, category, link, title, description, author)
 		end
 
 		puts "Get data from #{site} is done."
 	end
 end
-
 
 
 

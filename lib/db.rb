@@ -2,10 +2,10 @@ require 'sqlite3'
 
 class DB
 	def initialize
+		@db_name = "database.db"
+		@table_name = "storage"
+		@db = SQLite3::Database.new(@db_name)
 		begin
-			@db_name = "database.db"
-			@table_name = "storage"
-			@db = SQLite3::Database.new(@db_name)
 			@db.execute "
 			CREATE TABLE #{@table_name} (
 				id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -26,6 +26,7 @@ class DB
 
 	def insert args
 		#args[3] == title
+		#args[6] == date
 		@db.execute("INSERT INTO #{@table_name} (site, category, link, title, desc, author, date)
 								  SELECT ?, ?, ?, ?, ?, ?, ?
 								WHERE NOT EXISTS (SELECT id FROM #{@table_name} WHERE title=?);",
@@ -41,7 +42,7 @@ class DB
 	end
 
 	def select_top num
-		@db.execute("SELECT id, site, category, link, title, desc, author, date FROM #{@table_name} order by date limit 0, ?;", num)
+		@db.execute("SELECT id, site, category, link, title, desc, author, date FROM #{@table_name} order by date desc limit 0, ?;", num)
 	end
 
 	def select_all
